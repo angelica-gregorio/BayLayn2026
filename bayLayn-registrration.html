@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Event Scanner</title>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; text-align: center; padding: 20px; background-color: #f4f4f4;}
+        h2 { color: #333; }
+        #reader { width: 100%; max-width: 400px; margin: 0 auto; border: 5px solid #ccc; border-radius: 10px; }
+        #result { 
+            font-size: 1.2em; font-weight: bold; margin-top: 20px; padding: 15px; 
+            border-radius: 8px; color: white; display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>📍 Campus Gate Scanner</h2>
+    <div id="reader"></div>
+    <div id="result"></div>
+
+    <script>
+        // --- PASTE YOUR URL INSIDE THE QUOTES BELOW ---
+        const googleScriptUrl = "https://script.google.com/macros/s/AKfycbycJIyeZNUMc5DJ_NzfNofkhieX15uglx1XwE7j-0wgH7HlH2aLK7QO7ZFO0Q_YPN4nHQ/exec"; 
+        // ----------------------------------------------
+
+        const html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
+
+        function onScanSuccess(decodedText) {
+            // 1. Show processing state
+            const resultBox = document.getElementById('result');
+            resultBox.style.display = "block";
+            resultBox.style.backgroundColor = "#ffc107"; // Yellow
+            resultBox.innerText = "Processing ID: " + decodedText + "...";
+            
+            // 2. Pause scanner
+            html5QrcodeScanner.pause();
+
+            // 3. Send to Google Sheets
+            fetch(googleScriptUrl + "?id=" + decodedText)
+            .then(response => response.text())
+            .then(data => {
+                resultBox.innerText = data;
+                
+                // 4. Color Logic
+                if(data.includes("WELCOME")) {
+                    resultBox.style.backgroundColor = "#28a745"; // Green
+                } else if (data.includes("ALREADY")) {
+                    resultBox.style.backgroundColor = "#fd7e14"; // Orange
+                } else {
+                    resultBox.style.backgroundColor = "#dc3545"; // Red
+                }
+                
+                // 5. Restart scanner after 2.5 seconds
+                setTimeout(() => { 
+                    html5QrcodeScanner.resume(); 
+                    resultBox.style.display = "none";
+                }, 2500);
+            })
+            .catch(err => {
+                resultBox.innerText = "Network Error";
+                resultBox.style.backgroundColor = "black";
+                setTimeout(() => html5QrcodeScanner.resume(), 2000);
+            });
+        }
+
+        html5QrcodeScanner.render(onScanSuccess);
+    </script>
+</body>
+</html>
