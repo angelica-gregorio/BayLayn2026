@@ -1,0 +1,150 @@
+:root {
+    /* COLORS EXTRACTED FROM LOGO */
+    --primary: #1e3a8a;
+    /* Baybayin Navy Blue */
+    --accent: #d97706;
+    /* Gold/Orange Accent */
+    --bg: #ffffff;
+    /* White Background */
+    --card-bg: #f3f4f6;
+    /* Light Gray Card */
+    --text: #1f2937;
+    /* Dark Gray Text */
+    --input-bg: #ffffff;
+    /* White Input */
+    --input-border: #d1d5db;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+}
+
+/* HEADER & LOGO */
+header {
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.org-logo {
+    width: 100px;
+    height: 100px;
+    object-fit: contain;
+    /* Keeps logo shape correct */
+    margin-bottom: 10px;
+    /* No border radius or border needed for this specific logo shape */
+}
+
+h2 {
+    margin: 0;
+    font-size: 1.8rem;
+    color: var(--primary);
+    /* Blue Text */
+    font-weight: 800;
+}
+
+p.subtitle {
+    color: #6b7280;
+    font-size: 0.95rem;
+    margin-top: 5px;
+    font-weight: 500;
+}
+
+/* CARD */
+.scanner-card {
+    background: var(--card-bg);
+    width: 100%;
+    max-width: 400px;
+    padding: 20px;
+    border-radius: 20px;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+    /* Soft Shadow */
+    border: 1px solid #e5e7eb;
+}
+
+#reader {
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+/* MANUAL INPUT */
+.manual-entry {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #e5e7eb;
+}
+
+input[type="text"] {
+    flex: 1;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid var(--input-border);
+    background: var(--input-bg);
+    color: var(--text);
+    outline: none;
+    transition: border 0.2s;
+}
+
+input[type="text"]:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+}
+
+.btn-manual {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 0 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-manual:hover {
+    background: #172554;
+}
+
+/* RESULT BOX */
+#result {
+    display: none;
+    margin-top: 20px;
+    padding: 15px;
+    border-radius: 12px;
+    text-align: center;
+}
+
+/* Updated Status Colors to match Light Mode */
+.status-success {
+    background: #dcfce7;
+    color: #14532d;
+    border: 1px solid #bbf7d0;
+}
+
+.status-error {
+    background: #fee2e2;
+    color: #7f1d1d;
+    border: 1px solid #fecaca;
+}
+
+.status-warning {
+    background: #ffedd5;
+    color: #7c2d12;
+    border: 1px solid #fed7aa;
+}
+
+.result-body {
+    font-size: 1.2rem;
+    font-weight: 800;
+    display: block;
+    margin-top: 5px;
+}

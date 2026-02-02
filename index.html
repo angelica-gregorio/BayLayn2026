@@ -3,235 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ACES Event Scanner</title>
+    <title>BayLayn 2026 Scanner</title>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    
-    <link rel="icon" href="https://scontent-mnl1-1.xx.fbcdn.net/v/t39.30808-6/620015681_1359190809576072_1351761344962927935_n.jpg?_nc_cat=106&ccb=1-7&_nc_sid=6ee11a&_nc_eui2=AeFrkOg7rquErGiYsDvvO2UKCXjqDMRZ41AJeOoMxFnjUMJUqircGwEdLFsxcT2161L23oe5XRP7cs5LCnqDqcgG&_nc_ohc=9DW4qBVU2WsQ7kNvwEoX6xJ&_nc_oc=AdmsB9yPWfMCNaJFsLHoEwZGSmwlhzpIHbA2U5TZ8GllKfrljoQvU509D7dQ4_ZJVJI&_nc_zt=23&_nc_ht=scontent-mnl1-1.xx&_nc_gid=yvrZumev1rSc5KglrOw5Nw&oh=00_Afubqf4RZ3lgZDc93eim5jFLwGF2wrUv_90q_IBycZz4Lg&oe=6984EB9F">
+    <link href="styles.css" rel="stylesheet">
+    <link href="script.js" rel="script">
 
-    <style>
-        :root {
-            --primary: #2563eb;
-            --success: #22c55e;
-            --warning: #f59e0b;
-            --error: #ef4444;
-            --bg: #f3f4f6;
-            --card-bg: #ffffff;
-            --text: #1f2937;
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-        }
-
-        /* --- HEADER --- */
-        header {
-            text-align: center;
-            margin-bottom: 25px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        
-        .org-logo {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            margin-bottom: 15px;
-            border: 3px solid white;
-        }
-
-        h2 {
-            margin: 0;
-            font-size: 1.5rem;
-            color: #111827;
-            font-weight: 700;
-        }
-        p.subtitle {
-            margin: 5px 0 0;
-            color: #6b7280;
-            font-size: 0.9rem;
-        }
-
-        /* --- CARD CONTAINER --- */
-        .scanner-card {
-            background: var(--card-bg);
-            width: 100%;
-            max-width: 400px;
-            padding: 20px;
-            border-radius: 16px;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        /* --- QR READER STYLING --- */
-        #reader {
-            width: 100%;
-            border: none !important;
-            border-radius: 12px;
-            overflow: hidden;
-        }
-        
-        /* Custom Button Styling */
-        #reader__dashboard_section_csr button {
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            margin: 5px;
-            font-size: 0.9rem;
-            width: 100%;
-        }
-        #reader__dashboard_section_swaplink {
-            display: none !important; 
-        }
-
-        /* --- RESULT BOX --- */
-        #result {
-            display: none;
-            padding: 20px;
-            border-radius: 12px;
-            text-align: center;
-            animation: popIn 0.3s ease-out;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        }
-
-        .result-title {
-            display: block;
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 5px;
-            opacity: 0.9;
-        }
-        .result-body {
-            display: block;
-            font-size: 1.25rem;
-            font-weight: 700;
-        }
-
-        /* Status Colors */
-        .status-processing { background-color: #fffbeb; color: #b45309; border: 2px solid #fcd34d; }
-        .status-success { background-color: #dcfce7; color: #14532d; border: 2px solid var(--success); }
-        .status-warning { background-color: #ffedd5; color: #7c2d12; border: 2px solid var(--warning); }
-        .status-error   { background-color: #fee2e2; color: #7f1d1d; border: 2px solid var(--error); }
-
-        /* --- FOOTER --- */
-        footer {
-            margin-top: auto;
-            padding-top: 20px;
-            font-size: 0.8rem;
-            color: #9ca3af;
-        }
-
-        @keyframes popIn {
-            0% { opacity: 0; transform: scale(0.95); }
-            100% { opacity: 1; transform: scale(1); }
-        }
-    </style>
+    <link rel="icon" href="620015681_1359190809576072_1351761344962927935_n.jpg">
 </head>
 <body>
-
     <header>
-        <img src="https://scontent-mnl1-1.xx.fbcdn.net/v/t39.30808-6/620015681_1359190809576072_1351761344962927935_n.jpg?_nc_cat=106&ccb=1-7&_nc_sid=6ee11a&_nc_eui2=AeFrkOg7rquErGiYsDvvO2UKCXjqDMRZ41AJeOoMxFnjUMJUqircGwEdLFsxcT2161L23oe5XRP7cs5LCnqDqcgG&_nc_ohc=9DW4qBVU2WsQ7kNvwEoX6xJ&_nc_oc=AdmsB9yPWfMCNaJFsLHoEwZGSmwlhzpIHbA2U5TZ8GllKfrljoQvU509D7dQ4_ZJVJI&_nc_zt=23&_nc_ht=scontent-mnl1-1.xx&_nc_gid=yvrZumev1rSc5KglrOw5Nw&oh=00_Afubqf4RZ3lgZDc93eim5jFLwGF2wrUv_90q_IBycZz4Lg&oe=6984EB9F" 
-             alt="Organization Logo" 
-             class="org-logo">
-             
-        <h2>Event Entry</h2>
-        <p class="subtitle">Official Gate Scanner</p>
+        <img src="https://scontent.fmnl10-1.fna.fbcdn.net/v/t39.30808-6/620015681_1359190809576072_1351761344962927935_n.jpg?_nc_cat=106&ccb=1-7&_nc_sid=6ee11a&_nc_eui2=AeFrkOg7rquErGiYsDvvO2UKCXjqDMRZ41AJeOoMxFnjUMJUqircGwEdLFsxcT2161L23oe5XRP7cs5LCnqDqcgG&_nc_ohc=9DW4qBVU2WsQ7kNvwF1tBz1&_nc_oc=Admzaxdz4s2h8ggq9jZw_TrHQN5NB0BsG0mj3iCnELg4td5T70T0U4p6uSaDMOdW-yQ&_nc_zt=23&_nc_ht=scontent.fmnl10-1.fna&_nc_gid=_-FjasMg4AfKMtZywVaBCQ&oh=00_Afs7VVTcKVuL1S3AwHybIIFZXyyS0YYo5vnWzZZLT0yc2w&oe=69863D1F" class="org-logo">
+        <h2>BayLayn 2026</h2>
+        <p class="subtitle">Para sa Bayan at Lasalyano</p>
     </header>
 
     <div class="scanner-card">
         <div id="reader"></div>
-        <div id="result">
-            <span class="result-title">Status</span>
-            <span class="result-body">Waiting...</span>
+        
+        <div class="manual-entry">
+            <input type="text" id="manualInput" placeholder="Enter ID (e.g. 001)">
+            <button class="btn-manual" onclick="manualCheck()">Go</button>
         </div>
+
+        <div id="result"></div>
     </div>
 
-    <footer>
-        System v1.0 • Authorized Personnel Only
-    </footer>
-
-    <script>
-        // --- CONFIGURATION ---
-        const googleScriptUrl = "https://script.google.com/macros/s/AKfycbyL7ZGTt9dIRetQxV-7XTsXcxnwnlXfknlUQLO_kp3LCk2133P8Ba23jf2Jh-A1V4qOgg/exec"; 
-        // ---------------------
-
-        // TURBO SCANNER SETTINGS
-        const scannerConfig = { 
-            fps: 20,                // 20 Scans per second
-            qrbox: 250,             // Scan box size
-            aspectRatio: 1.0, 
-            disableFlip: false,     
-            formatsToSupport: [ Html5QrcodeSupportedFormats.QR_CODE ], // ONLY QR (Faster)
-            videoConstraints: {
-                facingMode: "environment",
-                width: { min: 640, ideal: 1280, max: 1920 },
-                height: { min: 480, ideal: 720, max: 1080 }
-            }
-        };
-
-        const html5QrcodeScanner = new Html5QrcodeScanner("reader", scannerConfig);
-
-        function showResult(type, title, message) {
-            const resultBox = document.getElementById('result');
-            const resultTitle = resultBox.querySelector('.result-title');
-            const resultBody = resultBox.querySelector('.result-body');
-
-            resultBox.className = ''; 
-            resultBox.classList.add('status-' + type);
-            resultBox.style.display = 'block';
-
-            resultTitle.innerText = title;
-            resultBody.innerText = message;
-        }
-
-        function onScanSuccess(decodedText) {
-            html5QrcodeScanner.pause(); // Pause immediately
-            
-            showResult('processing', 'Processing', 'Checking Database...');
-
-            fetch(googleScriptUrl + "?id=" + decodedText)
-            .then(response => response.text())
-            .then(data => {
-                if(data.includes("WELCOME")) {
-                    showResult('success', 'ACCESS GRANTED', data.replace("✅ WELCOME: ", ""));
-                } 
-                else if (data.includes("ALREADY")) {
-                    showResult('warning', 'DUPLICATE ENTRY', data.replace("⚠️ ALREADY INSIDE: ", ""));
-                } 
-                else {
-                    showResult('error', 'ACCESS DENIED', data.replace("❌ ", ""));
-                }
-                
-                // Resume scanning after 1.5s
-                setTimeout(() => { 
-                    html5QrcodeScanner.resume(); 
-                    document.getElementById('result').style.display = 'none';
-                }, 1500);
-            })
-            .catch(err => {
-                showResult('error', 'NETWORK ERROR', 'Check connection');
-                setTimeout(() => html5QrcodeScanner.resume(), 1000);
-            });
-        }
-
-        html5QrcodeScanner.render(onScanSuccess);
-    </script>
 </body>
 </html>
