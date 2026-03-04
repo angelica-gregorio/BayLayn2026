@@ -30,70 +30,164 @@
     </div>
 
     <script>
-        // --- CONFIGURATION ---
-        // PASTE YOUR GOOGLE SCRIPT URL BELOW
-        const googleScriptUrl = "https://script.google.com/macros/s/AKfycbwKzXF9bI4044LjTBzaVgQSy1bLQToqKF-7yZCOjbSToALdNRkj9JDj13p-6Rtgai3Y/exec"; 
-        // ---------------------
+     // --- CONFIGURATION ---
+const googleScriptUrl = "https://script.google.com/macros/s/AKfycbwKzXF9bI4044LjTBzaVgQSy1bLQToqKF-7yZCOjbSToALdNRkj9JDj13p-6Rtgai3Y/exec";
 
-        // AUDIO SYSTEM
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        function beep(f, d, t) {
-            const o = audioCtx.createOscillator(); const g = audioCtx.createGain();
-            o.type = t; o.frequency.value = f; o.connect(g); g.connect(audioCtx.destination);
-            o.start(); setTimeout(() => o.stop(), d);
+// AUDIO SYSTEM (Pre-initialized)
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+function beep(f, d, t) {
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.type = t;
+    o.frequency.value = f;
+    o.connect(g);
+    g.connect(audioCtx.destination);
+    g.gain.setValueAtTime(0.3, audioCtx.currentTime); // Volume control
+    o.start();
+    setTimeout(() => o.stop(), d);
+}
+function playSuccess() { 
+    beep(1000, 80, 'sine'); 
+    setTimeout(() => beep(1500, 80, 'sine'), 80); 
+}
+function playError() { 
+    beep(300, 300, 'sawtooth'); 
+}
+
+// CACHE SYSTEM (Prevents duplicate scans)
+const scanCache = new Map();
+const CACHE_DURATION = 3000; // 3 seconds
+
+// DOM CACHE (Avoid repeated querySelector calls)
+const resultDiv = document.getElementById('result');
+const manualInput = document.getElementById('manualInput');
+
+// OPTIMIZED PROCESSOR
+function processID(id) {
+    if (!id) return;
+    
+    // Normalize ID
+    id = id.trim().toUpperCase();
+    
+    // Check cache first (instant response)
+    const cached = scanCache.get(id);
+    if (cached && Date.now() - cached.time < CACHE_DURATION) {
+        showResult('status-warning', 'DUPLICATE SCAN', 'Wait 3 seconds');
+        playError();
+        quickResume();
+        return;
+    }
+    
+    // Pause scanner
+    if (html5QrcodeScanner.getState() === Html5QrcodeScannerState.SCANNING) {
+        html5QrcodeScanner.pause();
+    }
+    
+    // Instant feedback (before network request)
+    showResult('status-info', 'SCANNING', id);
+    playSuccess(); // Play sound immediately
+    
+    // Add to cache immediately
+    scanCache.set(id, { time: Date.now() });
+    
+    // Network request with timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 sec timeout
+    
+    fetch(`${googleScriptUrl}?id=${id}`, { 
+        signal: controller.signal,
+        cache: 'no-store' // Prevent browser caching
+    })
+    .then(res => {
+        clearTimeout(timeoutId);
+        return res.text();
+    })
+    .then(data => {
+        // Update cache with result
+        scanCache.set(id, { time: Date.now(), result: data });
+        
+        // Ultra-fast response parsing
+        if (data.includes("WELCOME")) {
+            showResult('status-success', '✓ GRANTED', data.replace("✅ WELCOME: ", ""));
+        } else if (data.includes("ALREADY")) {
+            showResult('status-warning', '⚠ DUPLICATE', "Already Inside");
+        } else {
+            showResult('status-error', '✗ DENIED', "Not Found");
         }
-        function playSuccess() { beep(1000, 100, 'sine'); setTimeout(() => beep(1500, 100, 'sine'), 100); }
-        function playError() { beep(300, 400, 'sawtooth'); }
-
-        // PROCESSOR
-        function processID(id) {
-            if(!id) return;
-            if(html5QrcodeScanner.getState() === Html5QrcodeScannerState.SCANNING) html5QrcodeScanner.pause();
-
-            showResult('status-warning', 'CHECKING', 'Searching Database...');
-
-            fetch(googleScriptUrl + "?id=" + id)
-            .then(res => res.text())
-            .then(data => {
-                if(data.includes("WELCOME")) {
-                    showResult('status-success', 'ACCESS GRANTED', data.replace("✅ WELCOME: ", ""));
-                    playSuccess();
-                } else if (data.includes("ALREADY")) {
-                    showResult('status-warning', 'DUPLICATE', "Already Inside");
-                    playError();
-                } else {
-                    showResult('status-error', 'DENIED', "ID Not Found");
-                    playError();
-                }
-                
-                // Fast Resume
-                setTimeout(() => { 
-                    if(html5QrcodeScanner.getState() === Html5QrcodeScannerState.PAUSED) html5QrcodeScanner.resume();
-                    document.getElementById('result').style.display = 'none';
-                    document.getElementById('manualInput').value = "";
-                }, 1500);
-            })
-            .catch(err => {
-                showResult('status-error', 'ERROR', 'Network Fail');
-                setTimeout(() => { if(html5QrcodeScanner.getState() === Html5QrcodeScannerState.PAUSED) html5QrcodeScanner.resume(); }, 1000);
-            });
+        
+        quickResume();
+    })
+    .catch(err => {
+        clearTimeout(timeoutId);
+        scanCache.delete(id); // Remove from cache on error
+        
+        if (err.name === 'AbortError') {
+            showResult('status-error', 'TIMEOUT', 'Server too slow');
+        } else {
+            showResult('status-error', 'ERROR', 'Network fail');
         }
+        playError();
+        quickResume(800);
+    });
+}
 
-        function showResult(cls, title, msg) {
-            const r = document.getElementById('result');
-            r.className = cls; r.style.display = 'block';
-            r.innerHTML = `<span style="font-size:0.8rem;opacity:0.8;text-transform:uppercase;font-weight:700">${title}</span><span class="result-body">${msg}</span>`;
-            if (navigator.vibrate) navigator.vibrate(cls === 'status-success' ? 50 : [50,50,50]);
+// FAST RESUME FUNCTION
+function quickResume(delay = 1200) {
+    setTimeout(() => {
+        if (html5QrcodeScanner.getState() === Html5QrcodeScannerState.PAUSED) {
+            html5QrcodeScanner.resume();
         }
+        resultDiv.style.display = 'none';
+        manualInput.value = "";
+    }, delay);
+}
 
-        function manualCheck() { processID(document.getElementById('manualInput').value); }
-        function onScanSuccess(decodedText) { processID(decodedText); }
+// OPTIMIZED RESULT DISPLAY
+function showResult(cls, title, msg) {
+    resultDiv.className = cls;
+    resultDiv.style.display = 'block';
+    resultDiv.innerHTML = `<div style="font-size:0.75rem;opacity:0.85;text-transform:uppercase;font-weight:700;margin-bottom:4px">${title}</div><div class="result-body">${msg}</div>`;
+    
+    // Haptic feedback
+    if (navigator.vibrate) {
+        navigator.vibrate(cls === 'status-success' ? 50 : [40, 30, 40]);
+    }
+}
 
-        const html5QrcodeScanner = new Html5QrcodeScanner("reader", { 
-            fps: 20, qrbox: 250, formatsToSupport: [ Html5QrcodeSupportedFormats.QR_CODE ],
-            videoConstraints: { facingMode: "environment" }
-        });
-        html5QrcodeScanner.render(onScanSuccess);
+// MANUAL CHECK
+function manualCheck() {
+    const id = manualInput.value.trim();
+    if (id) processID(id);
+}
+
+// QR SCAN HANDLER
+function onScanSuccess(decodedText) {
+    processID(decodedText);
+}
+
+// SCANNER INITIALIZATION (Optimized settings)
+const html5QrcodeScanner = new Html5QrcodeScanner("reader", {
+    fps: 30, // Increased from 20 for faster detection
+    qrbox: { width: 250, height: 250 },
+    formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE],
+    videoConstraints: { 
+        facingMode: "environment",
+        aspectRatio: 1.0 // Better for QR codes
+    },
+    rememberLastUsedCamera: true // Faster on repeat use
+});
+
+html5QrcodeScanner.render(onScanSuccess);
+
+// CLEANUP CACHE PERIODICALLY
+setInterval(() => {
+    const now = Date.now();
+    for (const [id, data] of scanCache.entries()) {
+        if (now - data.time > CACHE_DURATION) {
+            scanCache.delete(id);
+        }
+    }
+}, 5000);
     </script>
 </body>
 </html>
