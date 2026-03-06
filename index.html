@@ -86,6 +86,7 @@
         fetch(`${googleScriptUrl}?id=${id}`, { 
             signal: controller.signal,
             cache: 'no-store' 
+            redirect: 'follow' // <-- ADD THIS LINE
         })
         .then(res => {
             clearTimeout(timeoutId);
