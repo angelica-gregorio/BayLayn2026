@@ -11,7 +11,7 @@
 </head>
 <body>
     <header>
-        <img src="logo.jpg" class="org-logo">
+        <img src="https://scontent.fmnl10-1.fna.fbcdn.net/v/t39.30808-6/620015681_1359190809576072_1351761344962927935_n.jpg?_nc_cat=106&ccb=1-7&_nc_sid=6ee11a&_nc_eui2=AeFrkOg7rquErGiYsDvvO2UKCXjqDMRZ41AJeOoMxFnjUMJUqircGwEdLFsxcT2161L23oe5XRP7cs5LCnqDqcgG&_nc_ohc=9DW4qBVU2WsQ7kNvwF1tBz1&_nc_oc=Admzaxdz4s2h8ggq9jZw_TrHQN5NB0BsG0mj3iCnELg4td5T70T0U4p6uSaDMOdW-yQ&_nc_zt=23&_nc_ht=scontent.fmnl10-1.fna&_nc_gid=_-FjasMg4AfKMtZywVaBCQ&oh=00_Afs7VVTcKVuL1S3AwHybIIFZXyyS0YYo5vnWzZZLT0yc2w&oe=69863D1F" class="org-logo">
         <h2>BayLayn 2026</h2>
         <p class="subtitle">Para sa Bayan at Lasalyano</p>
     </header>
@@ -29,8 +29,7 @@
 
     <script>
     // --- CONFIGURATION ---
-    // REPLACE THIS WITH YOUR NEWLY DEPLOYED WEB APP URL
-    const googleScriptUrl = "https://script.google.com/macros/s/AKfycbxRPFNAyhx7xrn0yF77qXOTCHDWuOqq5mdwj0Eyo5f9y854RYtw6EYZ0UEnIimr8MUF/exec";
+    const googleScriptUrl = "https://script.google.com/macros/s/AKfycbwKzXF9bI4044LjTBzaVgQSy1bLQToqKF-7yZCOjbSToALdNRkj9JDj13p-6Rtgai3Y/exec";
 
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     function beep(f, d, t) {
@@ -83,10 +82,11 @@
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 8000); 
         
+        // ADDED redirect: 'follow' here properly formatted
         fetch(`${googleScriptUrl}?id=${id}`, { 
             signal: controller.signal,
-            cache: 'no-store' 
-            redirect: 'follow' // <-- ADD THIS LINE
+            cache: 'no-store',
+            redirect: 'follow' 
         })
         .then(res => {
             clearTimeout(timeoutId);
@@ -95,7 +95,6 @@
         .then(data => {
             scanCache.set(id, { time: Date.now(), result: data });
             
-            // Build the HTML list of students dynamically
             let studentListHtml = "";
             if (data.students && data.students.length > 0) {
                 studentListHtml = `<ul style="text-align: left; margin-top: 10px; padding-left: 20px; font-size: 0.85rem; max-height: 150px; overflow-y: auto;">`;
