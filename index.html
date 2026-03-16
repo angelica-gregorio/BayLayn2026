@@ -7,11 +7,11 @@
     <script src="https://unpkg.com/html5-qrcode"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <link href="styles.css" rel="stylesheet">
-    <link rel="icon" href="620015681_1359190809576072_1351761344962927935_n.jpg">
+    <link rel="icon" href="logo.jpg">
 </head>
 <body>
     <header>
-        <img src="https://scontent.fmnl10-1.fna.fbcdn.net/v/t39.30808-6/620015681_1359190809576072_1351761344962927935_n.jpg?_nc_cat=106&ccb=1-7&_nc_sid=6ee11a&_nc_eui2=AeFrkOg7rquErGiYsDvvO2UKCXjqDMRZ41AJeOoMxFnjUMJUqircGwEdLFsxcT2161L23oe5XRP7cs5LCnqDqcgG&_nc_ohc=9DW4qBVU2WsQ7kNvwF1tBz1&_nc_oc=Admzaxdz4s2h8ggq9jZw_TrHQN5NB0BsG0mj3iCnELg4td5T70T0U4p6uSaDMOdW-yQ&_nc_zt=23&_nc_ht=scontent.fmnl10-1.fna&_nc_gid=_-FjasMg4AfKMtZywVaBCQ&oh=00_Afs7VVTcKVuL1S3AwHybIIFZXyyS0YYo5vnWzZZLT0yc2w&oe=69863D1F" class="org-logo">
+        <img src="logo.jpg" class="org-logo">
         <h2>BayLayn 2026</h2>
         <p class="subtitle">Para sa Bayan at Lasalyano</p>
     </header>
@@ -23,8 +23,16 @@
             <input type="text" id="manualInput" placeholder="Enter ID (e.g. 001)">
             <button class="btn-manual" onclick="manualCheck()">Go</button>
         </div>
+    </div>
 
-        <div id="result"></div>
+    <!-- Modal Popup -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-box" id="modalBox">
+            <button class="modal-close" onclick="closeModal()">✕</button>
+            <div class="modal-title" id="modalTitle"></div>
+            <div class="modal-body" id="modalBody"></div>
+            <button class="modal-dismiss-btn" onclick="closeModal()">Dismiss</button>
+        </div>
     </div>
 
     <script>
@@ -54,8 +62,36 @@
     const scanCache = new Map();
     const CACHE_DURATION = 3000; 
 
-    const resultDiv = document.getElementById('result');
     const manualInput = document.getElementById('manualInput');
+    const modalOverlay = document.getElementById('modalOverlay');
+    const modalBox = document.getElementById('modalBox');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalBody = document.getElementById('modalBody');
+
+    let scannerPausedByModal = false;
+
+    function showModal(cls, title, bodyHtml) {
+        modalBox.className = 'modal-box ' + cls;
+        modalTitle.textContent = title;
+        modalBody.innerHTML = bodyHtml;
+        modalOverlay.classList.add('active');
+        scannerPausedByModal = true;
+
+        if (navigator.vibrate) {
+            navigator.vibrate(cls === 'status-success' ? 50 : [40, 30, 40]);
+        }
+    }
+
+    function closeModal() {
+        modalOverlay.classList.remove('active');
+        manualInput.value = "";
+        scannerPausedByModal = false;
+
+        // Resume scanner if it was paused
+        if (html5QrcodeScanner.getState() === Html5QrcodeScannerState.PAUSED) {
+            html5QrcodeScanner.resume();
+        }
+    }
 
     function processID(id) {
         if (!id) return;
@@ -64,9 +100,8 @@
         
         const cached = scanCache.get(id);
         if (cached && Date.now() - cached.time < CACHE_DURATION) {
-            showResult('status-warning', 'DUPLICATE SCAN', 'Wait 3 seconds');
+            showModal('status-warning', 'DUPLICATE SCAN', 'Wait 3 seconds before scanning again.');
             playError();
-            quickResume(1500);
             return;
         }
         
@@ -74,7 +109,7 @@
             html5QrcodeScanner.pause();
         }
         
-        showResult('status-info', 'SCANNING', id);
+        showModal('status-info', 'SCANNING...', `<span style="opacity:0.7">${id}</span>`);
         playSuccess(); 
         
         scanCache.set(id, { time: Date.now() });
@@ -82,7 +117,6 @@
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 8000); 
         
-        // ADDED redirect: 'follow' here properly formatted
         fetch(`${googleScriptUrl}?id=${id}`, { 
             signal: controller.signal,
             cache: 'no-store',
@@ -97,22 +131,20 @@
             
             let studentListHtml = "";
             if (data.students && data.students.length > 0) {
-                studentListHtml = `<ul style="text-align: left; margin-top: 10px; padding-left: 20px; font-size: 0.85rem; max-height: 150px; overflow-y: auto;">`;
+                studentListHtml = `<ul class="modal-students">`;
                 data.students.forEach(student => {
-                    studentListHtml += `<li style="margin-bottom: 4px;"><strong>${student.name}</strong> <span style="font-size: 0.75rem; opacity: 0.8;">(${student.category})</span></li>`;
+                    studentListHtml += `<li><strong>${student.name}</strong> <span>(${student.category})</span></li>`;
                 });
                 studentListHtml += `</ul>`;
             }
 
             if (data.status === "success") {
-                showResult('status-success', '✓ GRANTED', `<strong>${data.schoolName}</strong><br>Timed in successfully.<br>${studentListHtml}`);
-                quickResume(5000); 
+                showModal('status-success', '✓ GRANTED', `<strong>${data.schoolName}</strong><br>Timed in successfully.${studentListHtml}`);
             } else if (data.status === "notice") {
-                showResult('status-warning', '⚠ ALREADY INSIDE', `<strong>${data.schoolName}</strong><br>Delegates already checked in.<br>${studentListHtml}`);
-                quickResume(5000); 
+                showModal('status-warning', '⚠ ALREADY INSIDE', `<strong>${data.schoolName}</strong><br>Delegates already checked in.${studentListHtml}`);
             } else {
-                showResult('status-error', '✗ DENIED', data.message || "School not found.");
-                quickResume(2000); 
+                showModal('status-error', '✗ DENIED', data.message || "School not found.");
+                playError();
             }
         })
         .catch(err => {
@@ -120,34 +152,13 @@
             scanCache.delete(id); 
             
             if (err.name === 'AbortError') {
-                showResult('status-error', 'TIMEOUT', 'Server too slow');
+                showModal('status-error', 'TIMEOUT', 'Server too slow. Try again.');
             } else {
-                showResult('status-error', 'ERROR', 'Network fail or Invalid JSON');
+                showModal('status-error', 'ERROR', 'Network fail or Invalid JSON.');
                 console.error(err);
             }
             playError();
-            quickResume(1500);
         });
-    }
-
-    function quickResume(delay = 1200) {
-        setTimeout(() => {
-            if (html5QrcodeScanner.getState() === Html5QrcodeScannerState.PAUSED) {
-                html5QrcodeScanner.resume();
-            }
-            resultDiv.style.display = 'none';
-            manualInput.value = "";
-        }, delay);
-    }
-
-    function showResult(cls, title, msg) {
-        resultDiv.className = cls;
-        resultDiv.style.display = 'block';
-        resultDiv.innerHTML = `<div style="font-size:0.75rem;opacity:0.85;text-transform:uppercase;font-weight:700;margin-bottom:4px">${title}</div><div class="result-body">${msg}</div>`;
-        
-        if (navigator.vibrate) {
-            navigator.vibrate(cls === 'status-success' ? 50 : [40, 30, 40]);
-        }
     }
 
     function manualCheck() {
@@ -156,6 +167,8 @@
     }
 
     function onScanSuccess(decodedText) {
+        // Don't scan while modal is open
+        if (scannerPausedByModal) return;
         processID(decodedText);
     }
 

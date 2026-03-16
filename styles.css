@@ -148,3 +148,148 @@ input[type="text"]:focus {
     display: block;
     margin-top: 5px;
 }
+
+/* Liquid Glass & Light Mode Modal */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+/* Modal overlay with blur and subtle light tint */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    /* Iridescent, slightly blue-tinted overlay with heavy blur */
+    background: linear-gradient(135deg, rgba(240, 248, 255, 0.25) 0%, rgba(240, 248, 255, 0.1) 100%);
+    backdrop-filter: blur(12px);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+.modal-overlay.active {
+    display: flex;
+}
+
+/* Glass Modal Box with highlights and liquid reflections */
+.modal-box {
+    font-family: 'Inter', sans-serif;
+    /* Iridescent gradient base for liquid glass effect */
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.7) 0%, rgba(255, 255, 255, 0.3) 100%);
+    backdrop-filter: blur(10px);
+    border-radius: 20px; /* Softer, more fluid corners */
+    padding: 32px 28px 28px;
+    width: min(90vw, 420px);
+    max-height: 85vh;
+    overflow-y: auto;
+    
+    /* Subtle internal and external shadows for liquid highlights & depth */
+    box-shadow: 
+        inset 0 1px 0 rgba(255, 255, 255, 0.6), /* Top wet lip highlight */
+        inset 0 -1px 0 rgba(0, 0, 0, 0.05), /* Bottom crease reflection */
+        0 8px 40px rgba(0,0,0,0.15); /* Soft, natural depth shadow */
+        
+    position: relative;
+    /* Thin light border simulates a precise glass edge */
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Fluid animation curve */
+}
+
+@keyframes popIn {
+    from { transform: scale(0.8); opacity: 0; }
+    to   { transform: scale(1);   opacity: 1; }
+}
+
+/* Glass Close Button with refraction effect */
+.modal-close {
+    position: absolute;
+    top: 14px;
+    right: 16px;
+    /* Very subtle light, blurred glass effect */
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0.1) 100%);
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #4b5563; /* Darker close icon for light mode */
+    font-size: 1.2rem;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    transition: background 0.2s, border-color 0.2s;
+}
+.modal-close:hover {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0.2) 100%);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+/* Content Text and Styles */
+.modal-title {
+    font-size: 0.7rem;
+    opacity: 0.9;
+    text-transform: uppercase;
+    font-weight: 700;
+    margin-bottom: 8px;
+    letter-spacing: 0.08em;
+    /* Default dark text color */
+    color: #111827; 
+}
+.modal-body {
+    font-size: 1.05rem;
+    font-weight: 600;
+    line-height: 1.5;
+    /* Default dark text color */
+    color: #1f2937;
+}
+.modal-students {
+    margin-top: 16px;
+    padding-left: 20px;
+    font-size: 0.9rem;
+    font-weight: 400;
+    opacity: 0.95;
+    /* Default dark text color */
+    color: #374151;
+}
+.modal-students li {
+    margin-bottom: 7px;
+}
+.modal-students li span {
+    font-size: 0.8rem;
+    opacity: 0.7;
+}
+
+/* Liquid Status Edge & Text Colors for Light Mode */
+.modal-box.status-success { border-left: 6px solid #4ade80; }
+.modal-box.status-warning  { border-left: 6px solid #facc15; }
+.modal-box.status-error    { border-left: 6px solid #f87171; }
+.modal-box.status-info     { border-left: 6px solid #60a5fa; }
+
+/* In Light Mode, we use the status colors for the titles */
+.modal-box.status-success .modal-title { color: #16a34a; } /* Darker green for readability */
+.modal-box.status-warning  .modal-title { color: #ca8a04; } /* Darker yellow for readability */
+.modal-box.status-error    .modal-title { color: #dc2626; } /* Darker red for readability */
+.modal-box.status-info     .modal-title { color: #2563eb; } /* Darker blue for readability */
+
+/* Liquid Frosted Dismiss Button */
+.modal-dismiss-btn {
+    margin-top: 20px;
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    border: none;
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    font-size: 0.95rem;
+    cursor: pointer;
+    /* Brighter frosted glass effect with blur */
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0.1) 100%);
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    /* Dark text for light mode button */
+    color: #1f2937;
+    transition: background 0.2s, border-color 0.2s;
+}
+.modal-dismiss-btn:hover {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0.2) 100%);
+    border-color: rgba(255, 255, 255, 0.4);
+}
